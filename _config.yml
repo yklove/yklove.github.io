@@ -80,3 +80,4 @@ theme: landscape
 deploy:
   type: git
   repo: git@github.com:yklove/yklove.github.io.git
+  branch: master
