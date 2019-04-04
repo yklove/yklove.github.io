@@ -27,10 +27,10 @@ override: false
 # For example, you put your favicons into `hexo-site/source/images` directory.
 # Then need to rename & redefine they on any other names, otherwise icons from Next will rewrite your custom icons in Hexo.
 favicon:
-  small: /images/favicon-16x16-next.png
-  medium: /images/favicon-32x32-next.png
-  apple_touch_icon: /images/apple-touch-icon-next.png
-  safari_pinned_tab: /images/logo.svg
+  small: /images/favicon-16.ico
+  medium: /images/favicon-32.ico
+  apple_touch_icon: /images/favicon-16.ico
+  safari_pinned_tab: /images/favicon-16.ico
   #android_manifest: /images/manifest.json
   #ms_browserconfig: /images/browserconfig.xml
 
@@ -96,7 +96,7 @@ menu:
   archives: /archives/ || archive
   categories: /categories/ || th
   tags: /tags/ || tags
-  about: /about/ || user
+#  about: /about/ || user
   #schedule: /schedule/ || calendar
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
@@ -218,7 +218,7 @@ excerpt_description: true
 # Automatically Excerpt. Not recommend.
 # Please use <!-- more --> in the post to control excerpt accurately.
 auto_excerpt:
-  enable: true
+  enable: false
   length: 300
 
 # Post meta display settings
@@ -234,7 +234,7 @@ post_wordcount:
   item_text: true
   wordcount: true
   min2read: true
-  totalcount: false
+  totalcount: true
   separated_meta: true
 
 # Wechat Subscriber
@@ -246,7 +246,7 @@ post_wordcount:
 # Reward
 #reward_comment: Donate comment here
 #wechatpay: /images/wechatpay.jpg
-#alipay: /images/alipay.jpg
+alipay: /images/WX20190404-170013.png
 #bitcoin: /images/bitcoin.png
 
 # Declare license on posts
