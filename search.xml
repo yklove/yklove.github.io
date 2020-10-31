@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hello Hexo</title>
+    <url>/2019/04/03/hello-hexo/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+<a id="more"></a>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+]]></content>
+      <categories>
+        <category>测试</category>
+      </categories>
+      <tags>
+        <tag>测试</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用 kubeadm 创建一个单主集群</title>
+    <url>/2019/04/04/%E4%BD%BF%E7%94%A8-kubeadm-%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%8D%95%E4%B8%BB%E9%9B%86%E7%BE%A4/</url>
+    <content><![CDATA[<p>接触到的一个项目会用到 <a href="https://kubernetes.io/" target="_blank" rel="noopener">kubernetes</a> ，但是没有一个良好的 kubernetes 环境可以供开发使用，只能自己动手搭一套了。</p>
+<a id="more"></a>
+<h2 id="开始搭建"><a href="#开始搭建" class="headerlink" title="开始搭建"></a>开始搭建</h2><h3 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h3><ul>
+<li>CentOS Linux release 7.5.1804 (Core)</li>
+</ul>
+<h3 id="安装-shadowsocks、proxychains4-解决网络问题"><a href="#安装-shadowsocks、proxychains4-解决网络问题" class="headerlink" title="安装 shadowsocks、proxychains4 解决网络问题"></a>安装 shadowsocks、proxychains4 解决网络问题</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pip install shadowsocks</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/rofl0r/proxychains-ng.git</span><br><span class="line"><span class="built_in">cd</span> proxychains-ng</span><br><span class="line">./configure</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line">make install-config</span><br></pre></td></tr></table></figure>
+<p>修改配置文件<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vi /etc/shadowsocks.json</span><br><span class="line">添加以下内容，服务器自行搭建或者寻找</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"server"</span>:<span class="string">"xx.xx.xx.xx"</span>,</span><br><span class="line">  <span class="string">"server_port"</span>:xxx,              </span><br><span class="line">  <span class="string">"local_address"</span>: <span class="string">"127.0.0.1"</span>,</span><br><span class="line">  <span class="string">"local_port"</span>:1080,             </span><br><span class="line">  <span class="string">"password"</span>:<span class="string">"xxx"</span>,        </span><br><span class="line">  <span class="string">"timeout"</span>:300,                </span><br><span class="line">  <span class="string">"method"</span>:<span class="string">"aes-256-cfb"</span>,    </span><br><span class="line">  <span class="string">"workers"</span>: 1              </span><br><span class="line">&#125;</span><br><span class="line">vi /usr/<span class="built_in">local</span>/etc/proxychains.conf</span><br><span class="line"><span class="comment"># 最后一行修改成</span></span><br><span class="line">socks5 	127.0.0.1 1080</span><br></pre></td></tr></table></figure></p>
+<p>启动shadowsock客户端<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nohup sslocal -c /etc/shadowsocks.json /dev/null 2&gt;&amp;1 &amp;</span><br><span class="line"><span class="comment"># 测试是否正常（返回的 json 中显示的是 shadowsocks 服务器地址）</span></span><br><span class="line">curl --socks5 127.0.0.1:1080 http://httpbin.org/ip</span><br><span class="line"><span class="comment"># 测试 proxychains4，能正常连接</span></span><br><span class="line">proxychains4 curl https://www.google.com</span><br></pre></td></tr></table></figure></p>
+<h3 id="安装-kubeadm、kubelet、kubectl"><a href="#安装-kubeadm、kubelet、kubectl" class="headerlink" title="安装 kubeadm、kubelet、kubectl"></a>安装 kubeadm、kubelet、kubectl</h3><p>首先添加 Kubernetes 仓库<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo</span><br><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg</span><br><span class="line">exclude=kube*</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure></p>
+<p>接下来关闭selinux防火墙<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">'s/^SELINUX=enforcing$/SELINUX=permissive/'</span> /etc/selinux/config</span><br></pre></td></tr></table></figure></p>
+<p>接下来安装上面提到的三个软件<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes</span><br></pre></td></tr></table></figure></p>
+<p>无法安装成功，会提示以下信息，因为某些原因导致网络不通。<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64/repodata/repomd.xml: [Errno 14] curl<span class="comment">#7 - "Failed to connect to 2404:6800:4005:807::200e: 网络不可达"</span></span><br><span class="line">正在尝试其它镜像</span><br></pre></td></tr></table></figure></p>
+<p>使用 proxychains4 执行安装命令<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">proxychains4 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes</span><br></pre></td></tr></table></figure></p>
+<p>耐心等待安装完成…<br><img src="/uploads/WX20190404-154303.png" alt="avatar"><br>安装完成！<br>启动 kubelet<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> --now kubelet</span><br><span class="line">cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br><span class="line">EOF</span><br><span class="line">sysctl --system</span><br></pre></td></tr></table></figure></p>
+<h3 id="使用-kubeadm-初始化"><a href="#使用-kubeadm-初始化" class="headerlink" title="使用 kubeadm 初始化"></a>使用 kubeadm 初始化</h3><blockquote>
+<p>镜像下载方法及脚本来源于 <a href="https://blog.51cto.com/purplegrape/2315451" target="_blank" rel="noopener">https://blog.51cto.com/purplegrape/2315451</a></p>
+</blockquote>
+<p>由于 kubeadm 初始化过程中会下载一部分 docker 镜像，而这些镜像也是无法直接下载的<br>首先查看需要使用哪些镜像<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images list</span><br><span class="line"><span class="comment"># 输出如下结果</span></span><br><span class="line">k8s.gcr.io/kube-apiserver:v1.14.0</span><br><span class="line">k8s.gcr.io/kube-controller-manager:v1.14.0</span><br><span class="line">k8s.gcr.io/kube-scheduler:v1.14.0</span><br><span class="line">k8s.gcr.io/kube-proxy:v1.14.0</span><br><span class="line">k8s.gcr.io/pause:3.1</span><br><span class="line">k8s.gcr.io/etcd:3.3.10</span><br><span class="line">k8s.gcr.io/coredns:1.3.1</span><br></pre></td></tr></table></figure></p>
+<p>我们通过 docker.io/mirrorgooglecontainers 下载再转换 docker 镜像标签<br>批量下载及转换标签脚本如下<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images list |sed -e <span class="string">'s/^/docker pull /g'</span> -e <span class="string">'s#k8s.gcr.io#docker.io/mirrorgooglecontainers#g'</span> |sh -x</span><br><span class="line">docker images |grep mirrorgooglecontainers |awk <span class="string">'&#123;print "docker tag ",$1":"$2,$1":"$2&#125;'</span> |sed -e <span class="string">'s#mirrorgooglecontainers#k8s.gcr.io#2'</span> |sh -x</span><br><span class="line">docker images |grep mirrorgooglecontainers |awk <span class="string">'&#123;print "docker rmi ", $1":"$2&#125;'</span> |sh -x</span><br><span class="line">docker pull coredns/coredns:1.3.1</span><br><span class="line">docker tag coredns/coredns:1.3.1 k8s.gcr.io/coredns:1.3.1</span><br><span class="line">docker rmi coredns/coredns:1.3.1</span><br></pre></td></tr></table></figure></p>
+<p>执行完成之后查看 docker images 应该会存在以下镜像<br><img src="/uploads/WX20190404-162805.png" alt="avatar"><br>接下来执行初始化命令<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm init --pod-network-cidr=10.244.0.0/16</span><br></pre></td></tr></table></figure></p>
+<p>初始化成功，需要保存好日志中输出的秘钥<br><img src="/uploads/WX20190404-163126.png" alt="avatar"><br>接下来执行：<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br></pre></td></tr></table></figure></p>
+<p>到这里就算是安装好了，但是执行 <code>kubectl get nodes</code> 会发现节点状态并不是 <code>Ready</code> 而是 <code>NotReady</code><br>执行 <code>systemctl status kubelet -l</code>查找原因：<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">4月 04 16:38:58 21.124 kubelet[15411]: W0404 16:38:58.960008   15411 cni.go:213] Unable to update cni config: No networks found <span class="keyword">in</span> /etc/cni/net.d</span><br><span class="line">4月 04 16:38:59 21.124 kubelet[15411]: E0404 16:38:59.238355   15411 kubelet.go:2170] Container runtime network not ready: NetworkReady=<span class="literal">false</span> reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized</span><br></pre></td></tr></table></figure></p>
+<p>因为kubelet配置了network-plugin=cni，但是还没安装，所以状态会是NotReady。接下来安装它：<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml</span><br><span class="line">kubectl apply -f kube-flannel.yml </span><br><span class="line">mkdir -p /etc/cni/net.d</span><br><span class="line">vi /etc/cni/net.d/10-flannel.conflist</span><br><span class="line"><span class="comment"># 写入以下内容：</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span>: <span class="string">"cbr0"</span>,</span><br><span class="line">  <span class="string">"plugins"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"flannel"</span>,</span><br><span class="line">      <span class="string">"delegate"</span>: &#123;</span><br><span class="line">        <span class="string">"hairpinMode"</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="string">"isDefaultGateway"</span>: <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"portmap"</span>,</span><br><span class="line">      <span class="string">"capabilities"</span>: &#123;</span><br><span class="line">        <span class="string">"portMappings"</span>: <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后执行<br><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart kubelet</span><br></pre></td></tr></table></figure></p>
+<p>此时查看节点状态是正常的了<br><img src="/uploads/WX20190404-164424.png" alt="avatar"></p>
+<p>到这里 Kubernetes 就算是安装完成了。</p>
+<h3 id="安装-Kubernetes-web界面"><a href="#安装-Kubernetes-web界面" class="headerlink" title="安装 Kubernetes web界面"></a>安装 Kubernetes web界面</h3><blockquote>
+<p>参考<a href="https://www.cnblogs.com/harlanzhang/p/10045975.html" target="_blank" rel="noopener">https://www.cnblogs.com/harlanzhang/p/10045975.html</a></p>
+</blockquote>
+<p>另外如果要运行与 master 节点上需要执行<br><code>kubectl taint nodes --all node-role.kubernetes.io/master-</code><br>否则 pod 会一直 pending</p>
+]]></content>
+      <categories>
+        <category>Kubernetes</category>
+      </categories>
+      <tags>
+        <tag>Kubernetes</tag>
+        <tag>k8s</tag>
+        <tag>linux</tag>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>（一）自己动手写操作系统——环境搭建</title>
+    <url>/2020/10/31/%EF%BC%88%E4%B8%80%EF%BC%89%E8%87%AA%E5%B7%B1%E5%8A%A8%E6%89%8B%E5%86%99%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E2%80%94%E2%80%94%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="（一）自己动手写操作系统——环境搭建"><a href="#（一）自己动手写操作系统——环境搭建" class="headerlink" title="（一）自己动手写操作系统——环境搭建"></a>（一）自己动手写操作系统——环境搭建</h1><blockquote>
+<p>环境：Mac OS 10.15.4</p>
+</blockquote>
+<h3 id="一、安装NASM"><a href="#一、安装NASM" class="headerlink" title="一、安装NASM"></a>一、安装NASM</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew install nasm</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>NASM全称The Netwide Assembler，是一款基于80x86和x86-64平台的汇编语言编译程序</p>
+<p>注：执行命令需要先安装brew，使用的版本为：2.14.02</p>
+</blockquote>
+<a id="more"></a>
+<h3 id="二、安装VirtualBox"><a href="#二、安装VirtualBox" class="headerlink" title="二、安装VirtualBox"></a>二、安装VirtualBox</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">brew cask install virtualbox</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><em>VirtualBox</em>是一款简单易用还免费的开源虚拟机</p>
+<p>注：执行命令需要安装brew cask，使用的版本为：6.0.14</p>
+</blockquote>
+<h3 id="三、编写代码"><a href="#三、编写代码" class="headerlink" title="三、编写代码"></a>三、编写代码</h3><p>新建文件：boot.asm</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">    org 07c00h          ;</span><br><span class="line">    mov ax, cs</span><br><span class="line">    mov ds, ax</span><br><span class="line">    mov es, ax</span><br><span class="line">    call DispStr        ;</span><br><span class="line">    jmp $               ;</span><br><span class="line"></span><br><span class="line">DispStr:</span><br><span class="line">    mov ax, BootMessage</span><br><span class="line">    mov bp, ax          ;</span><br><span class="line">    mov cx, 16          ;</span><br><span class="line">    mov ax, 01301h      ;</span><br><span class="line">    mov bx, 000ch       ;</span><br><span class="line">    mov dl, 0</span><br><span class="line">    int 10h             ;</span><br><span class="line">    ret</span><br><span class="line">BootMessage:    db &quot;Hello, OS world!&quot;</span><br><span class="line">times 510-($-$$) db 0   ;</span><br><span class="line">                        ;</span><br><span class="line">dw 0xaa55               ;</span><br></pre></td></tr></table></figure>
+<h3 id="四、编译"><a href="#四、编译" class="headerlink" title="四、编译"></a>四、编译</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">nasm boot.asm -o boot.bin</span><br></pre></td></tr></table></figure>
+<h3 id="五、制作为映像文件"><a href="#五、制作为映像文件" class="headerlink" title="五、制作为映像文件"></a>五、制作为映像文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">dd if=boot.bin of=boot.img bs=512 count=1</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注：</p>
+<ol>
+<li><p>制作软盘镜像文件diska.img<br>命令： dd if=/dev/zero of=diska.img bs=512 count=2880</p>
+</li>
+<li><p>复制boot.bin到boot.img中<br>命令： dd if=boot.bin of=boot.img bs=512 count=1</p>
+</li>
+<li><p>复制diska.img中从第512字节往后的内容添加到boot.img中（这是dd最出彩的部分）<br>命令： dd if=diska.img of=boot.img skip=1 seek=1 bs=512 count=2879</p>
+</li>
+</ol>
+<p>来源：<a href="https://blog.csdn.net/sunjing/article/details/78781411" target="_blank" rel="noopener">https://blog.csdn.net/sunjing/article/details/78781411</a></p>
+</blockquote>
+<h3 id="六、运行"><a href="#六、运行" class="headerlink" title="六、运行"></a>六、运行</h3><h4 id="1、打开VirtualBox，新建虚拟机，选择类型和版本均为Other："><a href="#1、打开VirtualBox，新建虚拟机，选择类型和版本均为Other：" class="headerlink" title="1、打开VirtualBox，新建虚拟机，选择类型和版本均为Other："></a>1、打开VirtualBox，新建虚拟机，选择类型和版本均为Other：</h4><p><img src="/uploads/image-20201031110227855.png" alt="image-20201031110227855"></p>
+<h4 id="2、内存选择32M："><a href="#2、内存选择32M：" class="headerlink" title="2、内存选择32M："></a>2、内存选择32M：</h4><p><img src="/uploads/image-20201031105405924.png" alt="image-20201031105405924"></p>
+<h4 id="3、创建一个虚拟磁盘备用："><a href="#3、创建一个虚拟磁盘备用：" class="headerlink" title="3、创建一个虚拟磁盘备用："></a>3、创建一个虚拟磁盘备用：</h4><p><img src="/uploads/image-20201031105426123.png" alt="image-20201031105426123"></p>
+<p><img src="/uploads/image-20201031105436240.png" alt="image-20201031105436240"></p>
+<p><img src="/uploads/image-20201031105446030.png" alt="image-20201031105446030"></p>
+<p><img src="/uploads/image-20201031105455294.png" alt="image-20201031105455294"></p>
+<h4 id="4、创建完毕后，在创建的虚拟机上打开设置选项："><a href="#4、创建完毕后，在创建的虚拟机上打开设置选项：" class="headerlink" title="4、创建完毕后，在创建的虚拟机上打开设置选项："></a>4、创建完毕后，在创建的虚拟机上打开设置选项：</h4><p><img src="/uploads/image-20201031114138866.png" alt="image-20201031114138866"></p>
+<h4 id="5、选择存储选项："><a href="#5、选择存储选项：" class="headerlink" title="5、选择存储选项："></a>5、选择存储选项：</h4><p><img src="/uploads/image-20201031114207186.png" alt="image-20201031114207186"></p>
+<h4 id="6、添加软盘控制器："><a href="#6、添加软盘控制器：" class="headerlink" title="6、添加软盘控制器："></a>6、添加软盘控制器：</h4><p><img src="/uploads/image-20201031110359648.png" alt="image-20201031110359648"></p>
+<h4 id="7、添加虚拟软驱："><a href="#7、添加虚拟软驱：" class="headerlink" title="7、添加虚拟软驱："></a>7、添加虚拟软驱：</h4><p><img src="/uploads/image-20201031110632692.png" alt="image-20201031110632692"></p>
+<h4 id="8、点击注册，选择刚刚制作的boot-img："><a href="#8、点击注册，选择刚刚制作的boot-img：" class="headerlink" title="8、点击注册，选择刚刚制作的boot.img："></a>8、点击注册，选择刚刚制作的boot.img：</h4><p><img src="/uploads/image-20201031105826100.png" alt="image-20201031105826100"></p>
+<p><img src="/uploads/image-20201031105834798.png" alt="image-20201031105834798"></p>
+<p><img src="/uploads/image-20201031105857565.png" alt="image-20201031105857565"></p>
+<h4 id="9、点击ok，保存设置。"><a href="#9、点击ok，保存设置。" class="headerlink" title="9、点击ok，保存设置。"></a>9、点击ok，保存设置。</h4><h4 id="10、接下来启动虚拟机："><a href="#10、接下来启动虚拟机：" class="headerlink" title="10、接下来启动虚拟机："></a>10、接下来启动虚拟机：</h4><p><img src="/uploads/image-20201031110815526.png" alt="image-20201031110815526"></p>
+]]></content>
+      <categories>
+        <category>自己动手写操作系统</category>
+      </categories>
+      <tags>
+        <tag>操作系统</tag>
+      </tags>
+  </entry>
+</search>
